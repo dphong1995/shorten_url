@@ -1,0 +1,40 @@
+version: "3.9"
+services:
+  db:
+    image: postgres
+    hostname: 0.0.0.0
+    volumes:
+      - ./shorten_url_be/tmp/db:/var/lib/postgresql
+    environment:
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: shorten_url_app_development
+    ports:
+      - "5433:5432"
+  be:
+    build: ./shorten_url_be
+    entrypoint: /usr/bin/entrypoint.sh
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./shorten_url_be:/myapp
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      RAILS_ENV: development
+      RACK_ENV: development
+      NODE_ENV: development
+  fe:
+    command: bash -c "yarn && yarn dev"
+    build: ./shorten_url_fe
+    entrypoint: /usr/bin/entrypoint.sh
+    volumes:
+      - ./shorten_url_fe:/myapp
+    ports:
+      - "3003:3003"
+      - "9229:9229"
+    environment:
+      NODE_ENV: development
+    depends_on:
+      - be
